@@ -11,28 +11,36 @@ import java.io.IOException;
  */
 public class ListLinks {
     public static void main(String[] args) throws IOException {
-        Validate.isTrue(args.length == 0, "usage: supply url to fetch");
-        String url = "https://search.naver.com/search.naver?where=news&query=%EB%B6%81%ED%95%9C&sm=tab_srt&sort=1&photo=0&field=0&reporter_article=&pd=0&ds=&de=&docid=&nso=so%3Add%2Cp%3Aall%2Ca%3Aall&mynews=0&refresh_start=0&related=0";
-        print("Fetching %s...", url);
+        Validate.isTrue(args.length == 0, "usage: delete url to fetch");
 
-        Document doc = Jsoup.connect(url).get();
-        Elements links = doc.select("a[href]");
-        Elements media = doc.select("[src]");
-        Elements imports = doc.select("link[href]");
-        Elements articles = doc.select("ul.type01 li");
 
-        print("\nArticles: (%d)", articles.size());
-        for (Element article : articles) {
-            print(" * a: <%s>  (%s)", article.select("a[href]").attr("href"), trim(article.text(), 35));
-        }
-        print("%s\n------------", articles.text());
-        //print("%s\n------------", links);
-        print("%s\n------------", media);
-        print("%s\n------------", imports);
-        //System.out.println(doc.text());
-        System.out.println("-----------------");
-        //System.out.println(doc.html());
-
+        Document doc1 = Jsoup.connect("https://search.naver.com/search.naver?where=news&query=%EB%B6%81%ED%95%9C&sm=tab_srt&sort=1&photo=0&field=0&reporter_article=&pd=0&ds=&de=&docid=&nso=so%3Add%2Cp%3Aall%2Ca%3Aall&mynews=0&refresh_start=0&related=0")
+                .get();
+        ParsNaver(doc1);
+/*
+        Document doc2 = Jsoup.connect("https://www.youtube.com/user/spotv/search?query=%ED%86%A0%ED%8A%B8%EB%84%98")
+                .get();
+        Elements contents = doc2.select("div ytd-item-section-renderer");
+        System.out.println(contents);
+        print("%s", doc2.html());
+*/
+/*
+        Document doc3 = Jsoup.connect("https://www.instagram.com/explore/tags/%ED%86%A0%ED%8A%B8%EB%84%98/")
+                .get();
+        Elements instagrams = doc3.select("div");
+        System.out.println(insta);
+        print("%s", doc3.html());
+*/
+/*
+        Document doc4 = Jsoup.connect("https://twitter.com/search?q=%EC%86%90%ED%9D%A5%EB%AF%BC&src=typed_query&f=live")
+                .get();
+        Elements twitters = doc4.select("section.css-1dbjc4n div div");
+        System.out.println(twitters);
+        print("%s", doc4.html());
+*/
+        Document doc5 = Jsoup.connect("https://search.daum.net/search?w=news&sort=recency&q=%EB%B6%81%ED%95%9C&cluster=n&DA=STC&dc=STC&pg=1&r=1&p=1&rc=1&at=more&sd=&ed=&period=")
+                .get();
+        ParsDaum(doc5);
 /**
         print("\nMedia: (%d)", media.size());
         for (Element src : media) {
@@ -65,4 +73,23 @@ public class ListLinks {
         else
             return s;
     }
+
+    private static void ParsNaver(Document doc){
+        Elements articles = doc.select("ul.type01 li");
+
+        print("\nArticles: (%d)", articles.size());
+        for (Element article : articles) {
+            print(" * a: <%s>  (%s)", article.select("a[href]").attr("href"), trim(article.text(), 35));
+        }
+    }
+
+    private static void ParsDaum(Document doc){
+        Elements articles = doc.select("#newsResultUL li");
+
+        print("\nArticles: (%d)", articles.size());
+        for (Element article : articles) {
+            print(" * a: <%s>  (%s)", article.select("a[href]").attr("href"), trim(article.text(), 35));
+        }
+    }
+
 }
