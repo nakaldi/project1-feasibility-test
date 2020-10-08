@@ -19,7 +19,7 @@ public class ListLinks {
 
         Document doc1 = Jsoup.connect("https://search.naver.com/search.naver?where=news&query=%EB%B6%81%ED%95%9C&sm=tab_srt&sort=1&photo=0&field=0&reporter_article=&pd=0&ds=&de=&docid=&nso=so%3Add%2Cp%3Aall%2Ca%3Aall&mynews=0&refresh_start=0&related=0")
                 .get();
-        ParsNaver(doc1);
+        parseNaver(doc1);
 /*
         Document doc2 = Jsoup.connect("https://www.youtube.com/user/spotv/search?query=%ED%86%A0%ED%8A%B8%EB%84%98")
                 .get();
@@ -43,7 +43,7 @@ public class ListLinks {
 */
         Document doc5 = Jsoup.connect("https://search.daum.net/search?w=news&sort=recency&q=%EB%B6%81%ED%95%9C&cluster=n&DA=STC&dc=STC&pg=1&r=1&p=1&rc=1&at=more&sd=&ed=&period=")
                 .get();
-        ParsDaum(doc5);
+        parseDaum(doc5);
 
         //로그인 할때 쓸것. 서울시 사이트는 이거 안쓰고 그냥 검색 data 하나만 넣어주니까 되네
 //        Connection.Response seoulSearch = Jsoup.connect("https://www.seoul.go.kr/realmnews/in/list.do")
@@ -121,7 +121,7 @@ public class ListLinks {
             return s;
     }
 
-    private static void ParsNaver(Document doc){
+    private static void parseNaver(Document doc){
         Elements articles = doc.select("ul.type01 li");
 
         print("\nArticles: (%d)", articles.size());
@@ -130,7 +130,7 @@ public class ListLinks {
         }
     }
 
-    private static void ParsDaum(Document doc){
+    private static void parseDaum(Document doc){
         Elements articles = doc.select("#newsResultUL li");
 
         print("\nArticles: (%d)", articles.size());
