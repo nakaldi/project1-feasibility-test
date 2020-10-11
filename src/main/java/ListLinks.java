@@ -80,7 +80,14 @@ public class ListLinks {
             case 7:
                 try {
                     String URL = "https://twitter.com/hashtag/손흥민";
-                    runSelenium(URL);
+                    seleniumTwitter(URL);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            case 8:
+                try{
+                    String URL = "";
+                    seleniumTwitter(URL);
                 }catch (Exception e){
                     e.printStackTrace();
                 }
@@ -151,7 +158,7 @@ public class ListLinks {
         }
     }
 
-    public static void runSelenium(String URL) throws Exception {
+    public static void seleniumTwitter(String URL) throws Exception {
         // 1. WebDriver 경로 설정
         System.setProperty("webdriver.chrome.driver", "D:/programming/WebDriver/bin/chromedriver.exe");
 
