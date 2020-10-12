@@ -1,4 +1,4 @@
-import com.google.common.base.Strings;
+
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.helper.Validate;
@@ -11,6 +11,8 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -236,7 +238,7 @@ public class ListLinks {
             WebElement parent = wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#items.style-scope.ytd-grid-renderer")));
 
             int lastHeight = parent.getSize().height;
-            for (int retryCount = 0; retryCount < 20; ) {
+            for (int retryCount = 0; retryCount < 30 && lastHeight < 10000; ) {
                 driver.findElement(By.cssSelector("body"))
                         .sendKeys(Keys.END);
                 Thread.sleep(300);
@@ -249,15 +251,18 @@ public class ListLinks {
                 System.out.println(retryCount + " / " + parent.getSize().height);
             }
 
-            List<WebElement> contents = parent.findElements(By.cssSelector("ytd-grid-video-renderer.style-scope.ytd-grid-renderer"));
+            Document doc8 = Jsoup.parse(driver.getPageSource(), "https://www.youtube.com");
+            Elements contents = doc8.select("ytd-grid-video-renderer.style-scope.ytd-grid-renderer");
+
+//            List<WebElement> contents = parent.findElements(By.cssSelector("ytd-grid-video-renderer.style-scope.ytd-grid-renderer"));
 
             System.out.println("조회된 콘텐츠 수 : " + contents.size());
 
             if (contents.size() > 0) {
-                for (WebElement content : contents) {
-                    String title = content.findElement(By.cssSelector("#video-title.yt-simple-endpoint.style-scope.ytd-grid-video-renderer")).getText();
-                    String href = content.findElement(By.cssSelector("#video-title.yt-simple-endpoint.style-scope.ytd-grid-video-renderer")).getAttribute("href");
-                    String metaData = content.findElement(By.cssSelector("#metadata-line")).getText();
+                for (Element content : contents) {
+                    String title = content.select("#video-title.yt-simple-endpoint.style-scope.ytd-grid-video-renderer").text();
+                    String href = content.select("#video-title.yt-simple-endpoint.style-scope.ytd-grid-video-renderer").attr("abs:href");
+                    String metaData = content.select("#metadata-line").text();
 
                     URL url;
                     Map<String, String> queryMap = null;
@@ -273,13 +278,50 @@ public class ListLinks {
                     System.out.println("========================");
                 }
             }
+//            if (contents.size() > 0) {
+//                for (WebElement content : contents) {
+//                    String title = content.findElement(By.cssSelector("#video-title.yt-simple-endpoint.style-scope.ytd-grid-video-renderer")).getText();
+//                    String href = content.findElement(By.cssSelector("#video-title.yt-simple-endpoint.style-scope.ytd-grid-video-renderer")).getAttribute("href");
+//                    String metaData = content.findElement(By.cssSelector("#metadata-line")).getText();
+//
+//                    URL url;
+//                    Map<String, String> queryMap = null;
+//                    try {
+//                        url = new URL(href);
+//                        queryMap = UrlUtils.getQueryMap(url.getQuery());
+//                    } catch (MalformedURLException e) {
+//                        e.printStackTrace();
+//                    }
+//
+//                    System.out.println(title + " / " + metaData);
+//                    System.out.println(href + " / " + queryMap.get("v"));
+//                    System.out.println("========================");
+//                }
+//            }
         } catch (TimeoutException e) {
             System.out.println("목록을 찾을 수 없습니다.");
         } finally {
-            //소스 출력
-            //System.out.println(driver.getPageSource());
+            //html 저장
+//            saveHtml("test.html", driver.getPageSource());
+//            System.out.println("저장 완료");
         }
         // WebDriver 종료
         driver.quit();
+    }
+    public static void saveHtml(String filename, String strHtml) {
+        File savedir = new File("D:/programming/project/web-project/feasibility-check/target/files");
+        if( !savedir.exists() ) {
+            savedir.mkdirs();
+        }
+
+        File file = new File(savedir, filename);
+        try {
+            FileOutputStream out = new FileOutputStream(file);
+            byte[] byteHtml = strHtml.getBytes();
+            out.write( byteHtml );
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
