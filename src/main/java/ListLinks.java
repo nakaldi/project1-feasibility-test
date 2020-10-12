@@ -1,3 +1,4 @@
+import com.google.common.base.Strings;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.helper.Validate;
@@ -11,7 +12,11 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 /**
@@ -84,7 +89,7 @@ public class ListLinks {
                 break;
             case 8:
                 try {
-                    String URL = "https://www.youtube.com/user/spotv/search?query=%ED%86%A0%ED%8A%B8%EB%84%98";
+                    String URL = "https://www.youtube.com/user/spotv/videos?view=0&sort=dd&flow=grid";
                     seleniumYoutube(URL);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -217,6 +222,7 @@ public class ListLinks {
         options.addArguments("--headless");                 // Browser를 띄우지 않음
         options.addArguments("--disable-gpu");              // GPU를 사용하지 않음, Linux에서 headless를 사용하는 경우 필요함.
         options.addArguments("--no-sandbox");               // Sandbox 프로세스를 사용하지 않음, Linux에서 headless를 사용하는 경우 필요함.
+        options.addArguments("--blink-settings=imagesEnabled=false");
 
         // 3. WebDriver 객체 생성
         ChromeDriver driver = new ChromeDriver(options);
@@ -227,13 +233,13 @@ public class ListLinks {
         try {
             // 6. 트윗 목록 Block 조회, 로드될 때까지 최대 30초간 대기
             WebDriverWait wait = new WebDriverWait(driver, 30);
-            WebElement parent = wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#page-manager > ytd-browse > ytd-two-column-browse-results-renderer")));
+            WebElement parent = wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("#items.style-scope.ytd-grid-renderer")));
 
             int lastHeight = parent.getSize().height;
-            for (int retryCount = 0; retryCount < 5; ) {
+            for (int retryCount = 0; retryCount < 20; ) {
                 driver.findElement(By.cssSelector("body"))
-                        .sendKeys(Keys.CONTROL, Keys.END);
-                Thread.sleep(1000);
+                        .sendKeys(Keys.END);
+                Thread.sleep(300);
                 if (lastHeight == parent.getSize().height) {
                     retryCount += 1;
                 } else {
@@ -242,28 +248,31 @@ public class ListLinks {
                 lastHeight = parent.getSize().height;
                 System.out.println(retryCount + " / " + parent.getSize().height);
             }
-            System.out.println(parent.getText());
 
-            List<WebElement> contents = parent.findElements(By.cssSelector("ytd-item-section-renderer.style-scope.ytd-section-list-renderer"));
+            List<WebElement> contents = parent.findElements(By.cssSelector("ytd-grid-video-renderer.style-scope.ytd-grid-renderer"));
 
             System.out.println("조회된 콘텐츠 수 : " + contents.size());
-/*
-            if (contents.size() > 0) {
-                // 8. 트윗 상세 내용 탐색
-                for (WebElement content : contents) {
-                    try {
-                        String username = content.findElement(By.cssSelector("span > span.css-901oao.css-16my406.r-1qd0xha.r-ad9z0x.r-bcqeeo.r-qvutc0")).getText();
-                        String id = content.findElement(By.cssSelector("span.css-901oao.css-16my406.r-1qd0xha.r-ad9z0x.r-bcqeeo.r-qvutc0")).getText();
-                        String text = content.findElement(By.cssSelector("div.css-901oao.r-hkyrab.r-1qd0xha.r-a023e6.r-16dba41.r-ad9z0x.r-bcqeeo.r-bnwqim.r-qvutc0")).getText();
 
-                        System.out.println(username + " " + id);
-                        System.out.println(text);
-                        System.out.println("========================");
-                    } catch (NoSuchElementException e) {
-                        // pass
+            if (contents.size() > 0) {
+                for (WebElement content : contents) {
+                    String title = content.findElement(By.cssSelector("#video-title.yt-simple-endpoint.style-scope.ytd-grid-video-renderer")).getText();
+                    String href = content.findElement(By.cssSelector("#video-title.yt-simple-endpoint.style-scope.ytd-grid-video-renderer")).getAttribute("href");
+                    String metaData = content.findElement(By.cssSelector("#metadata-line")).getText();
+
+                    URL url;
+                    Map<String, String> queryMap = null;
+                    try {
+                        url = new URL(href);
+                        queryMap = UrlUtils.getQueryMap(url.getQuery());
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
                     }
+
+                    System.out.println(title + " / " + metaData);
+                    System.out.println(href + " / " + queryMap.get("v"));
+                    System.out.println("========================");
                 }
-            }*/
+            }
         } catch (TimeoutException e) {
             System.out.println("목록을 찾을 수 없습니다.");
         } finally {
@@ -273,27 +282,4 @@ public class ListLinks {
         // WebDriver 종료
         driver.quit();
     }
-
-    public static boolean pageDown_New(WebElement webeScrollArea, int iLoopCount, ChromeDriver driver) {/*
-        try
-        {
-            System.out.println("---------------- Started - pageDown_New ----------------");
-            driver = ExecutionSetup.getDriver();
-            dragger = new Actions(driver);
-
-            for (int i = 0; i <= iLoopCount; i++)
-            {
-                dragger.moveToElement(webeScrollArea).click().sendKeys(Keys.PAGE_DOWN).build().perform();
-            }
-            System.out.println("---------------- Ending - pageDown_New ----------------");
-            return true;
-        }
-        catch (Exception e)
-        {
-            System.out.println("---------------- Not able to do page down ----------------");
-            return false;
-        }*/
-        return false;
-    }
-
 }
